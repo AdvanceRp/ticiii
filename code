@@ -1,0 +1,124 @@
+#include <a_samp>
+ 
+new Text: SquaresTD[9], Text: SymbolTD[9], Text: OtherTD[3];
+new bool: Computer[9], bool: Player[9], bool: Server[9], bool: Game = true, Winns, Losers;
+new True[9][3] = {
+        {0, 1, 2}, {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6}
+};
+ 
+public OnPlayerConnect(playerid)
+{
+        new count;
+        for(new i; i < 3; i ++)
+        {
+                switch(i)
+                {
+                    case 0: OtherTD[i] = TextDrawCreate(397.000000, 148.000000, "~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~~n~"),
+                                        TextDrawLetterSize(OtherTD[i], 0.500000, 1.000000),
+                                        TextDrawTextSize(OtherTD[i], 244.000000, 0.000000);
+                        case 1: OtherTD[i] = TextDrawCreate(345.000000, 301.000000, "~w~RESET"),
+                                        TextDrawLetterSize(OtherTD[i], 0.389999, 2.099999),
+                                        TextDrawTextSize(OtherTD[i], 393.000000, 40.000000),
+                                        TextDrawSetSelectable(OtherTD[i], 1);
+                    case 2: OtherTD[i] = TextDrawCreate(247.000000, 306.000000, "   ~w~YOUR ~g~0~w~/~r~0 ~w~COMPUTER"),
+                                        TextDrawLetterSize(OtherTD[i], 0.209999, 0.999999),
+                                        TextDrawTextSize(OtherTD[i], 343.000000, 40.000000);
+                }
+                TextDrawFont(OtherTD[i], 2);
+                TextDrawUseBox(OtherTD[i], 1);
+                if(i != 2) TextDrawBoxColor(OtherTD[i], 150);
+                else TextDrawBoxColor(OtherTD[i], 50);
+                TextDrawColor(OtherTD[i], -1);
+                TextDrawSetOutline(OtherTD[i], 0);
+                TextDrawSetProportional(OtherTD[i], 1);
+                TextDrawSetShadow(OtherTD[i], 0);
+        for(new k; k < 3; k++)
+        {
+            SquaresTD[count] = TextDrawCreate(255.0 + k * 46.0, 155.0 + i * 44.0, " ");
+            TextDrawBackgroundColor(SquaresTD[count], 1677721700);
+                        TextDrawFont(SquaresTD[count], 5);
+                        TextDrawUseBox(SquaresTD[count], 1);
+                        TextDrawBoxColor(SquaresTD[count], 0);
+                        TextDrawTextSize(SquaresTD[count], 40.000000, 40.000000);
+                        TextDrawSetPreviewModel(SquaresTD[count], 19466);
+            TextDrawSetPreviewRot(SquaresTD[count], 0.000000, 0.000000, 90.000000, 0.000099);
+                        TextDrawSetSelectable(SquaresTD[count], 1);
+            SymbolTD[count] = TextDrawCreate(269.0 + k * 45.0, 166.0 + i * 45.0, " ");
+                        TextDrawBackgroundColor(SymbolTD[count], 255);
+                        TextDrawFont(SymbolTD[count], 1);
+                        TextDrawColor(SymbolTD[count], -1);
+                        TextDrawSetProportional(SymbolTD[count], 1);
+            count ++;
+        }
+        TextDrawShowForPlayer(playerid, OtherTD[i]);
+        }
+        for(new i; i < 9; i ++)
+        {
+            TextDrawShowForPlayer(playerid, SymbolTD[i]);
+            TextDrawShowForPlayer(playerid, SquaresTD[i]);
+        }
+        SelectTextDraw(playerid, 1677721700);
+        return 1;
+}
+ 
+public OnPlayerClickTextDraw(playerid, Text:clickedid)
+{
+        for(new i; i < 9; i ++)
+        {
+                if(clickedid == SquaresTD[i] && Server[i] == false && Game == true)
+                {
+                        Player[i] = true, Server[i] = true;
+                        TextDrawSetString(SymbolTD[i], "X");
+                        for(new a; a < sizeof(True); a ++)
+                        {
+                                if(Player[True[a][0]] == true && Player[True[a][1]] == true && Player[True[a][2]] == true)
+                                {
+                                        SendClientMessage(playerid, 0x33AA33AA, "Победа!");
+                                    Winns ++, Game = false, UPDATE_STAT(playerid);
+                                        return 1;
+                                }
+                        }
+                        for(new a = random(9); a < 9; a ++)
+                        {
+                            switch(Server[a])
+                            {
+                                case false:
+                                {
+                                    Server[a] = true, Computer[a] = true;
+                                                TextDrawSetString(SymbolTD[a], "O");
+                                                for(new b; b < sizeof(True); b ++)
+                                                {
+                                                        if(Computer[True[b][0]] == true && Computer[True[b][1]] == true && Computer[True[b][2]] == true)
+                                                        {
+                                                                SendClientMessage(playerid, 0xFF3300AA, "Проигрыш!");
+                                                                Losers = 0, Game = false, UPDATE_STAT(playerid);
+                                                        }
+                                                }
+                                                break;
+                                }
+                                default: continue;
+                            }
+                        }
+                        TextDrawShowForPlayer(playerid, SymbolTD[i]);
+                }
+        }
+        if(clickedid == OtherTD[1])
+        {
+            for(new i; i < 9; i ++)
+            {
+                        Server[i] = false;
+                        Computer[i] = false;
+                        Player[i] = false;
+                        TextDrawSetString(SymbolTD[i], " ");
+                }
+            Game = true;
+        }
+        return 1;
+}
+ 
+stock UPDATE_STAT(playerid)
+{
+        new string[48];
+        format(string, sizeof(string), "   ~w~YOUR ~g~%d~w~/~r~%d ~w~COMPUTER", Winns, Losers);
+        TextDrawSetString(OtherTD[2], string), TextDrawShowForPlayer(playerid, OtherTD[2]);
+}
