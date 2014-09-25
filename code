@@ -1,5 +1,5 @@
 #include <a_samp>
- 
+ // by Ferjkee (Nikifor), 2014
 new Text: SquaresTD[9], Text: SymbolTD[9], Text: OtherTD[3];
 new bool: Computer[9], bool: Player[9], bool: Server[9], bool: Game = true, Winns, Losers;
 new True[9][3] = {
